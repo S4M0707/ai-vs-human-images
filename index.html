@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Image Detector</title>
+  <style>
+    :root {
+      --bg-color: #f0f2f5;
+      --card-bg: #ffffff;
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --ai-color: #f87171;
+      --real-color: #34d399;
+      --text-color: #1f2937;
+      --muted: #6b7280;
+      --border-radius: 12px;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      margin: 0;
+      padding: 40px;
+      color: var(--text-color);
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--primary-dark);
+      font-size: 28px;
+      margin-bottom: 30px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      border-radius: var(--border-radius);
+      border: 1px solid #ccc;
+      background: white;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .status {
+      text-align: center;
+      margin: 20px 0;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .preview-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      padding: 10px;
+    }
+
+    .image-block {
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.2s;
+    }
+
+    .image-block:hover {
+      transform: translateY(-5px);
+    }
+
+    .image-block img {
+      width: 220px;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 12px;
+    }
+
+    .filename {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      word-break: break-all;
+      text-align: center;
+    }
+
+    .prediction {
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 50px;
+      color: white;
+      font-size: 14px;
+    }
+
+    .ai {
+      background-color: var(--ai-color);
+    }
+
+    .real {
+      background-color: var(--real-color);
+    }
+  </style>
+</head>
+<body>
+  <h2>🧠 AI Image Detector</h2>
+
+  <div class="controls">
+    <input type="file" id="imageInput" accept="image/*" multiple />
+    <button onclick="uploadImages()">Upload & Predict</button>
+  </div>
+
+  <div id="status" class="status"></div>
+
+  <div class="preview-container" id="previewContainer"></div>
+
+  <script>
+    const previewContainer = document.getElementById("previewContainer");
+
+    document.getElementById("imageInput").addEventListener("change", function () {
+      previewContainer.innerHTML = "";
+      Array.from(this.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const block = document.createElement("div");
+          block.className = "image-block";
+
+          const img = document.createElement("img");
+          img.src = e.target.result;
+
+          const filename = document.createElement("div");
+          filename.className = "filename";
+          filename.innerText = file.name;
+
+          block.appendChild(img);
+          block.appendChild(filename);
+          previewContainer.appendChild(block);
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    async function uploadImages() {
+      const input = document.getElementById("imageInput");
+      const files = input.files;
+      if (!files.length) {
+        alert("Please select at least one image.");
+        return;
+      }
+
+      const formData = new FormData();
+      for (let file of files) {
+        formData.append("imgFiles", file);
+      }
+
+      document.getElementById("status").innerText = "⏳ Uploading and predicting...";
+
+      try {
+        const uploadResponse = await fetch("http://localhost:8000/upload", {
+          method: "POST",
+          body: formData
+        });
+        const uploadData = await uploadResponse.json();
+        const imgPaths = uploadData.img_paths;
+
+        const predictResponse = await fetch("http://localhost:8000/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(imgPaths)
+        });
+
+        const predictionData = await predictResponse.json();
+        const predictions = predictionData.predictions;
+
+        const blocks = document.querySelectorAll(".image-block");
+        blocks.forEach((block, idx) => {
+          const predLabel = document.createElement("div");
+          predLabel.className = "prediction " + (predictions[idx] === 1 ? "ai" : "real");
+          predLabel.innerText = predictions[idx] === 1 ? "AI Generated" : "Real";
+          block.appendChild(predLabel);
+        });
+
+        document.getElementById("status").innerText = "✅ Done!";
+      } catch (error) {
+        console.error("Error:", error);
+        document.getElementById("status").innerText = "❌ Something went wrong.";
+      }
+    }
+  </script>
+</body>
+</html>
