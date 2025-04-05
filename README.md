@@ -19,8 +19,9 @@ pip install -r requirements.txt
 ```
 
 ### 2. Run the App
+```bash
 uvicorn main:app --reload
-
+```
 
 ## Docker Instructions
 

@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Image Detector</title>
   <style>
     :root {
@@ -127,6 +128,7 @@
     }
   </style>
 </head>
+
 <body>
   <h2>🧠 AI Image Detector</h2>
 
@@ -141,6 +143,7 @@
 
   <script>
     const previewContainer = document.getElementById("previewContainer");
+    const fileNameMap = {};
 
     document.getElementById("imageInput").addEventListener("change", function () {
       previewContainer.innerHTML = "";
@@ -149,9 +152,12 @@
         reader.onload = e => {
           const block = document.createElement("div");
           block.className = "image-block";
+          block.dataset.filename = file.name;
 
           const img = document.createElement("img");
           img.src = e.target.result;
+          img.alt = file.name;
+          img.className = "preview-img";
 
           const filename = document.createElement("div");
           filename.className = "filename";
@@ -200,11 +206,16 @@
         const predictions = predictionData.predictions;
 
         const blocks = document.querySelectorAll(".image-block");
-        blocks.forEach((block, idx) => {
-          const predLabel = document.createElement("div");
-          predLabel.className = "prediction " + (predictions[idx] === 1 ? "ai" : "real");
-          predLabel.innerText = predictions[idx] === 1 ? "AI Generated" : "Real";
-          block.appendChild(predLabel);
+
+        blocks.forEach((block) => {
+          const filename = block.dataset.filename;
+          const match = predictions.find(p => p.filename === filename);
+          if (match) {
+            const predLabel = document.createElement("div");
+            predLabel.className = "prediction " + (match.prediction === 1 ? "ai" : "real");
+            predLabel.innerText = match.prediction === 1 ? "AI Generated" : "Real";
+            block.appendChild(predLabel);
+          }
         });
 
         document.getElementById("status").innerText = "✅ Done!";
@@ -213,6 +224,8 @@
         document.getElementById("status").innerText = "❌ Something went wrong.";
       }
     }
+
   </script>
 </body>
+
 </html>

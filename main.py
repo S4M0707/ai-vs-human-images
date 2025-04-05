@@ -50,17 +50,24 @@ async def predict(imgPaths: list[str]):
         dataset = data_loader.prepare_image_paths(imgPaths)
         predictions = predictor.predict(dataset)
 
+        result = []
+        for path, pred in zip(imgPaths, predictions.tolist()):
+            result.append({
+                "filename": os.path.basename(path),
+                "prediction": pred
+            })
+
         for path in imgPaths:
             if os.path.exists(path):
                 os.remove(path)
 
-        return {"predictions": predictions.tolist()}
+        return {"predictions": result}
 
     except Exception as e:
         for path in imgPaths:
             if os.path.exists(path):
                 os.remove(path)
         raise HTTPException(status_code=500, detail=f"Error happened: {str(e)}")
-    
+
 if __name__ == '__main__':
     uvicorn.run(app, host="127.0.0.1", port=8000)
