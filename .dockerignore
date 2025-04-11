@@ -7,8 +7,12 @@ __pycache__/
 *.h5
 *.keras
 .env
-user_files/*
 data/*
 env
-test_data
+model/EfficientNetB0.keras
+model/resnet.keras
+model/vit.keras
 notebooks
+test_data
+training_history
+user_files/*

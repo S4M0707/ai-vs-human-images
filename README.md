@@ -28,9 +28,9 @@ uvicorn main:app --reload
 You can also pull the pre-built Docker image for easier deployment:
 
 1.  Pull the Docker image:
-    `docker pull s4m0707/ai-vs-human-images:v1.0`
+    `docker pull s4m0707/ai-vs-human-images:v2.0`
 2.  Run the Docker container:
-    `docker run -p 8000:8000 s4m0707/ai-vs-human-images:v1.0`
+    `docker run -p 8000:8000 s4m0707/ai-vs-human-images:v2.0`
 3.  Access the application via `http://localhost:8000`.
 
 ## Contributing

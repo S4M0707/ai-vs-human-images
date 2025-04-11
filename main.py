@@ -29,7 +29,7 @@ app.add_middleware(
 
 dataset_path = "data"
 data_loader = DatasetLoader(dataset_path,  img_size=(224, 224), batch_size=16)
-predictor = ModelPredictor("model/best_model.keras")
+predictor = ModelPredictor("model/EfficientNetB0.keras")
 
 @app.post('/upload')
 async def upload(imgFiles: list[UploadFile] = File(...)):
